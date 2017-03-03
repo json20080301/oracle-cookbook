@@ -1,0 +1,48 @@
+
+
+
+
+  sqlplus [ [<option>] [{logon | /nolog}] [<start>] ]
+  
+  <logon> is: {<username>[/<password>][@<connect_identifier>] | / } [AS {SYSDBA | SYSOPER | SYSASM}] [EDITION=value]
+    
+  ------------------------  
+  <connect_identifier>  <connect_identifier> can be in the form of Net Service Name    or Easy Connect.
+
+    可以是：  @[<net_service_name> | [//]Host[:Port]/<service_name>]
+    
+    Net Service Name 方式，需要配置TNS
+    如：
+    TEST_ORCL =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 122222.12212.21221.2121)(PORT = 1520))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = orcl)
+    )
+  )  
+     sqlplus myusername/mypassword@Host/TEST_ORCL
+     
+   Easy Connect  方式：
+    如：  sqlplus myusername/mypassword@Host/ORCL
+  
+  <start> is: @<URL>|<filename>[.<ext>] [<parameter> ...]
+  
+  /nolog 表示不连接到任何一个数据库，只打开sqlplus
+  
+  1.连接本机数据库
+  sqlplus  dbuser/dbpwd
+  
+  2.DBA连接本机数据库
+   sqlplus / as sysdba
+  
+  3.连接数据库并执行脚本
+     sqlplus / as sysdba @grant2dbscantool.txt
+     
+     
+  sqlplus / as sysdba
+
+create user ustp identified by ustp ;
+grant dba to ustp;
+ 

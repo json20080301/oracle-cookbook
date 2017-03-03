@@ -1,0 +1,109 @@
+create or replace function f_in_getcallprocname
+(
+    str_in_stackinfo    in    varchar2    --Stored procedure execution stack information
+)
+return varchar2
+is
+    str_l_endofline   constant    char(1) := chr(10);
+    str_l_endoffield  constant    char(1) := chr(32);
+
+    i_l_ptfinligne    number;
+    i_l_ptdebligne    number;
+    i_l_ptdebcode     number;
+    i_l_index         number;
+
+    str_l_stackinfo   varchar2(4000);
+    str_l_result      varchar2(4000);
+    str_l_linestr     varchar2(4000);
+    str_l_procname    varchar2(4000);
+begin
+    --str_l_stackinfo    := dbms_utility.format_call_stack;
+    str_l_stackinfo := str_in_stackinfo;
+    i_l_index       := 2;
+    i_l_ptfinligne  := length(str_l_stackinfo);
+    i_l_ptdebligne  := i_l_ptfinligne;
+
+    while i_l_ptfinligne > 0 and i_l_ptdebligne > 83 loop
+
+        i_l_ptdebligne   := instr (str_l_stackinfo, str_l_endofline, -1, i_l_index) + 1 ;
+        i_l_index        := i_l_index + 1;
+
+        str_l_linestr    := substr(str_l_stackinfo, i_l_ptdebligne, i_l_ptfinligne - i_l_ptdebligne);
+        i_l_ptdebcode    := instr (str_l_linestr, str_l_endoffield, -1, 1);
+        str_l_procname   := substr(str_l_linestr, i_l_ptdebcode + 1);
+
+        if (i_l_index > 3) then
+            str_l_result := str_l_result || replace(str_l_procname, user||'.', '') || ' | ';
+        end if;
+
+        i_l_ptfinligne := i_l_ptdebligne - 1;
+
+    end loop;
+
+    return str_l_result;
+
+end f_in_getcallprocname;
+/
+create or replace procedure p_in_procexceptionlog
+(
+    str_in_description      varchar2
+)
+as
+    pragma autonomous_transaction;
+
+    str_l_calltrace   varchar2(4000);                                      --stack
+    str_l_procname    varchar2(100);                                       --object name
+    str_l_sqlerrm     varchar2(2000);                                      --error information
+    i_l_is11g         pls_integer;                                         --is 11G
+    str_l_sqlerrmex   varchar2(4000) := null;                              --line of error information
+    dt_l_currenttime  date := sysdate;                                     --current time
+begin
+
+    --get stack
+    str_l_calltrace := f_in_getcallprocname(dbms_utility.format_call_stack);
+    str_l_calltrace := trim(substr(str_l_calltrace, 1, instr(str_l_calltrace,'|',-1,2) -1 ));
+
+    --got exception function name
+    str_l_procname := trim(substr(substr(str_l_calltrace, instr(str_l_calltrace, '|', -1, 1) + 1 ), 1, 100));
+
+    select count(*)
+      into i_l_is11g
+      from v$version t
+     where t.banner like '% 11g %';
+
+    --if 11g get exception line
+    if ( i_l_is11g > 0) then
+        execute immediate 'select dbms_utility.format_error_backtrace from dual' into str_l_sqlerrmex;
+    end if;
+
+    --got error information
+    str_l_sqlerrm := substr(sqlerrm, 1, 2000);
+
+    --if got exception line information, assembled all information
+    if (str_l_sqlerrmex is not null) then
+        str_l_sqlerrm := substr(str_l_sqlerrm, 1, 1000) || ' ' || substr(str_l_sqlerrmex, 1, 1000);
+    end if;
+
+    --record error info
+    insert into t_procexceptionlog
+              ( procname,
+                processip,
+                operator,
+                sqlerrm,
+                description,
+                logtime )
+        values( upper(str_l_procname),
+                sys_context('userenv', 'ip_address') ,
+                substr(str_l_calltrace, 1, 1000),
+                substr(str_l_sqlerrm, 1, 2000),
+                nvl(str_in_description,substr(str_l_sqlerrm, 1, 2000)),
+                dt_l_currenttime
+               );
+
+    commit;
+    return;
+exception
+    when others then
+        rollback;
+        return;
+end p_in_procexceptionlog;

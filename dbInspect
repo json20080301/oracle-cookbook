@@ -1,0 +1,102 @@
+create user dbInspect
+       identified by 123456
+       default tablespace dbatbs
+       temporary tablespace temp
+/
+grant connect,resource,create any table,drop any table,create sequence, 
+      select any table, create any index, drop any index,
+      alter any trigger, create any trigger, drop any trigger,
+      alter any type, create any type, drop any type,
+      create any view, drop any view, create any directory, 
+      create procedure, query rewrite, create session to dbInspect
+/
+grant select on v_$process to dbInspect
+/
+grant select on v_$parameter to dbInspect
+/
+grant execute on dbms_lock to dbInspect
+/
+grant select on v_$lock to dbInspect
+/
+grant select on v_$session to dbInspect
+/
+grant select on v_$mystat to dbInspect
+/
+grant select on v_$session_wait to dbInspect
+/
+grant select on dba_kgllock to dbInspect
+/
+grant select on v_$sqltext to dbInspect
+/
+grant debug connect session to dbInspect
+/
+grant select on dba_data_files to dbInspect
+/
+grant select on dba_undo_extents to dbInspect
+/
+grant select on dba_tablespaces to dbInspect
+/
+grant select on dba_free_space to dbInspect
+/
+grant select on slog$ to dbInspect
+/
+grant alter session to dbInspect
+/
+grant alter system to dbInspect
+/
+grant select on v_$sgastat to dbInspect
+/
+grant select on v_$sort_segment to dbInspect
+/
+grant select on v_$sql to dbInspect
+/
+grant select on v_$sql_plan to dbInspect
+/
+grant create database link to dbInspect
+/
+grant select on v_$sqlarea to dbInspect
+/
+grant select on v_$sql to dbInspect
+/
+grant select_catalog_role to dbInspect 
+/
+grant select any table to dbInspect
+/
+grant CREATE SEQUENCE to dbInspect 
+/
+grant CREATE TRIGGER to dbInspect 
+/
+grant CREATE CLUSTER to dbInspect 
+/
+grant CREATE PROCEDURE to dbInspect 
+/
+grant CREATE TYPE to dbInspect 
+/
+grant CREATE OPERATOR to dbInspect 
+/
+grant CREATE TABLE to dbInspect 
+/
+grant CREATE INDEXTYPE to dbInspect 
+/
+grant execute on dbms_job to dbInspect
+/
+grant select on dba_objects to dbInspect
+/
+grant select on dba_source to dbInspect
+/
+grant select on DBA_ARGUMENTS to dbInspect
+/
+grant execute any procedure to dbInspect
+/
+grant CREATE any SEQUENCE to public 
+/
+grant select on v_$open_cursor to public
+/
+grant select on v_$session to public
+/
+grant select on dba_sequences to public
+/
+grant delete any table to public
+/
+grant select on v_$transaction to public
+/

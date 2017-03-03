@@ -1,0 +1,26 @@
+begin
+   for item in ( select object_name, object_type
+                    from user_objects
+                   where status = 'INVALID') loop
+        begin
+            if (item.object_type = 'PACKAGE')  then
+                execute immediate    'alter package'
+                                  || ' ' || item.object_name || ' compile package';
+            elsif (item.object_type = 'PACKAGE BODY') then
+                execute immediate    'alter package'
+                                  || ' ' || item.object_name || ' compile body';
+            else
+                execute immediate    'alter ' || item.object_type
+                                  || ' ' || item.object_name || ' compile';
+            end if;
+        exception
+             when others then
+                 null;
+        end;
+   end loop;   
+   dbms_utility.compile_schema(user, false);
+exception
+   when others then
+       null;
+end;
+/

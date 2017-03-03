@@ -1,0 +1,61 @@
+create or replace procedure p_in_releasefunclock
+(
+    str_in_lockhandle          in       varchar2
+)
+as
+    i_l_return                 integer;
+begin
+
+    if (str_in_lockhandle is not null) then
+        i_l_return := dbms_lock.release(str_in_lockhandle);
+        
+        if (i_l_return = 0) then
+            null;
+        end if;
+    end if;
+
+    return;
+
+exception
+    when others then
+        p_in_procexceptionlog (str_in_lockhandle);
+        return;
+end p_in_releasefunclock;
+/
+
+create or replace function f_in_getfunctionlock
+(
+    str_in_functionname         in             varchar2
+)
+return varchar2                                                 --lockhandle 
+as
+    str_l_uname          varchar2(200);                         --schema name
+    str_l_lockhandle     varchar2(200);
+    i_l_return           integer;
+begin
+
+    --get schema name
+    select user into str_l_uname from dual;
+
+    dbms_lock.allocate_unique(str_l_uname || '.' || str_in_functionname, str_l_lockhandle);
+
+    --request lock
+    i_l_return := dbms_lock.request(str_l_lockhandle, --lock handle
+                                    6,                --tyep:  6 exclusive
+                                    20,              --wait time (seconds): 0 not wait
+                                    false             --whether release the lock when commit false: no
+                                   );
+   
+    -- Return value: 0 - success;1 - timeout;2 - deadlock;3 - parameter error;4 - already own lock specified by 'id' or 'lockhandle';5 - illegal lockhandle
+    if (i_l_return  <> 0) then
+          str_l_lockhandle := null;
+    end if;
+
+    return str_l_lockhandle;
+
+exception
+    when others then
+        p_in_procexceptionlog (str_in_functionname);
+        return null;
+end f_in_getfunctionlock;
+/

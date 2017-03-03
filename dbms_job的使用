@@ -1,0 +1,22 @@
+create or replace procedure run_job
+is
+    jobno1                number;
+    i_l_count             integer;
+    dt_l_starttime        date;
+    str_l_interval        varchar2(100);
+
+begin
+    dt_l_starttime := sysdate + 20/1440;
+    str_l_interval := 'sysdate + 20/1440';
+
+    select count(*) into i_l_count from user_jobs where what = 'p_back_dbchecktool;';
+
+    if i_l_count =0 then
+        dbms_job.submit(jobno1, 'p_back_dbchecktool;', dt_l_starttime, str_l_interval);
+    end if;
+
+    commit;
+
+end run_job;
+
+ 
