@@ -1,0 +1,111 @@
+一、摘要
+有关表分区的一些维护性操作：
+注：分区根据具体情况选择。
+表分区有以下优点：
+1、数据查询：数据被存储到多个文件上，减少了I/O负载，查询速度提高。
+2、数据修剪：保存历史数据非常的理想。
+3、备份：将大表的数据分成多个文件，方便备份和恢复。
+4、并行性：可以同时向表中进行DML操作，并行性性能提高。
+ 
+二、分区操作
+1. 添加分区
+以下代码给SALES表添加了一个P3分区
+ALTER TABLE SALES ADD PARTITION P3 VALUES LESS THAN(TO_DATE('2003-06-01','YYYY-MM-DD'));
+注意：以上添加的分区界限应该高于最后一个分区界限。
+以下代码给SALES表的P3分区添加了一个P3SUB1子分区
+ALTER TABLE SALES MODIFY PARTITION P3 ADD SUBPARTITION P3SUB1 VALUES('COMPLETE');
+ 
+2. 删除分区
+以下代码删除了P3表分区：
+ALTER TABLE SALES DROP PARTITION P3;
+在以下代码删除了P4SUB1子分区：
+ALTER TABLE SALES DROP SUBPARTITION P4SUB1;
+注意：如果删除的分区是表中唯一的分区，那么此分区将不能被删除，要想删除此分区，必须删除表。
+ 
+3. 截断分区
+截断某个分区是指删除某个分区中的数据，并不会删除分区，也不会删除其它分区中的数据。当表中即使只有一个分区时，也可以截断该分区。通过以下代码截断分区：
+ALTER TABLE SALES TRUNCATE PARTITION P2;
+通过以下代码截断子分区：
+ALTER TABLE SALES TRUNCATE SUBPARTITION P2SUB2;
+ 
+4. 合并分区
+合并分区是将相邻的分区合并成一个分区，结果分区将采用较高分区的界限，值得注意的是，不能将分区合并到界限较低的分区。以下代码实现了P1 P2分区的合并：
+ALTER TABLE SALES MERGE PARTITIONS P1,P2 INTO PARTITION P2;
+ 
+5. 拆分分区
+拆分分区将一个分区拆分两个新分区，拆分后原来分区不再存在。注意不能对HASH类型的分区进行拆分。
+ALTER TABLE SALES SBLIT PARTITION P2 AT(TO_DATE('2003-02-01','YYYY-MM-DD'))
+INTO (PARTITION P21,PARTITION P22);
+ 
+6. 接合分区(coalesca)
+结合分区是将散列分区中的数据接合到其它分区中，当散列分区中的数据比较大时，可以增加散列分区，然后进行接合，值得注意的是，接合分区只能用于散列分区中。通过以下代码进行接合分区：
+ALTER TABLE SALES COALESCA PARTITION;
+ 
+7.重命名表分区
+以下代码将P21更改为P2
+ALTER TABLE SALES RENAME PARTITION P21 TO P2;
+ 
+8. 跨分区查询
+select sum( *) from (
+(select count(*) cn from t_table_SS PARTITION (P200709_1)
+union all
+select count(*) cn from t_table_SS PARTITION (P200709_2));
+ 
+9. 查询表上有多少分区
+SELECT * FROM useR_TAB_PARTITIONS WHERE TABLE_NAME='tableName'
+ 
+10. 查询索引信息
+select object_name,object_type,tablespace_name,sum(value)
+from v$segment_statistics
+where statistic_name IN ('physical reads','physical write','logical reads')and object_type='INDEX'
+group by object_name,object_type,tablespace_name
+order by 4 desc
+ 
+三、分区查询
+1.显示数据库所有分区表的信息：
+select * from DBA_PART_TABLES
+ 
+2.显示当前用户可访问的所有分区表信息:
+select * from ALL_PART_TABLES
+ 
+3.显示当前用户所有分区表的信息：
+select * from USER_PART_TABLES
+ 
+4.显示表分区信息 显示数据库所有分区表的详细分区信息：
+select * from DBA_TAB_PARTITIONS           
+ 
+5.显示当前用户可访问的所有分区表的详细分区信息：
+select * from ALL_TAB_PARTITIONS
+ 
+6.显示当前用户所有分区表的详细分区信息：
+select * from USER_TAB_PARTITIONS
+ 
+7.显示子分区信息 显示数据库所有组合分区表的子分区信息：
+select * from DBA_TAB_SUBPARTITIONS
+ 
+8.显示当前用户可访问的所有组合分区表的子分区信息：
+select * from ALL_TAB_SUBPARTITIONS
+ 
+9.显示当前用户所有组合分区表的子分区信息：
+select * from USER_TAB_SUBPARTITIONS
+ 
+10.显示分区列 显示数据库所有分区表的分区列信息：
+select * from DBA_PART_KEY_COLUMNS
+ 
+11.显示当前用户可访问的所有分区表的分区列信息：
+select * from ALL_PART_KEY_COLUMNS
+ 
+12.显示当前用户所有分区表的分区列信息：
+select * from USER_PART_KEY_COLUMNS
+ 
+13.显示子分区列 显示数据库所有分区表的子分区列信息：
+select * from DBA_SUBPART_KEY_COLUMNS
+ 
+14.显示当前用户可访问的所有分区表的子分区列信息：
+select * from ALL_SUBPART_KEY_COLUMNS
+ 
+15.显示当前用户所有分区表的子分区列信息：
+select * from USER_SUBPART_KEY_COLUMNS
+ 
+16.怎样查询出Oracle数据库中所有的的分区表
+select * from user_tables a where a.partitioned='YES'
