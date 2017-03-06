@@ -1,0 +1,61 @@
+http://blog.csdn.net/tianlesoftware/article/details/4668723
+
+
+ 统计信息的存储位置
+ 
+统计信息收集如下数据：
+            （1）表自身的分析： 包括表中的行数，数据块数，行长等信息。
+            （2）列的分析：包括列值的重复数，列上的空值，数据在列上的分布情况。
+            （3）索引的分析： 包括索引叶块的数量，索引的深度，索引的聚合因子等。
+ 
+这些统计信息存放在数据字典里，如：
+（1）.  DBA_TABLES
+（2）.  DBA_OBJECT_TABLES
+（3）.  DBA_TAB_STATISTICS
+（4）.  DBA_TAB_COL_STATISTICS
+（5）.  DBA_TAB_HISTOGRAMS
+（6）.  DBA_INDEXES
+（7）.  DBA_IND_STATISTICS
+（8）.  DBA_CLUSTERS
+（9）.  DBA_TAB_PARTITIONS
+（10）.                      DBA_TAB_SUBPARTITIONS
+（11）.                      DBA_IND_PARTITIONS
+（12）.                      DBA_IND_SUBPARTITIONS
+（13）.                      DBA_PART_COL_STATISTICS
+（14）.                      DBA_PART_HISTOGRAMS
+（15）.                      DBA_SUBPART_COL_STATISTICS
+（16）.                      DBA_SUBPART_HISTOGRAMS
+ 
+3.1    表的统计信息：
+            包含表行数，使用的块数，空的块数，块的使用率，行迁移和链接的数量，pctfree，pctused的数据，行的平均大小：
+ 
+    SELECT NUM_ROWS, --表中的记录数
+        BLOCKS, --表中数据所占的数据块数
+        EMPTY_BLOCKS, --表中的空块数
+        AVG_SPACE, --数据块中平均的使用空间
+        CHAIN_CNT, --表中行连接和行迁移的数量
+        AVG_ROW_LEN --每条记录的平均长度
+            FROM USER_TABLES
+ 
+3.2    索引列的统计信息   
+            包含索引的深度（B-Tree的级别），索引叶级的块数量，集群因子（clustering_factor), 唯一值的个数。
+ 
+SELECT BLEVEL, --索引的层数
+    LEAF_BLOCKS, --叶子结点的个数
+    DISTINCT_KEYS, --唯一值的个数
+    AVG_LEAF_BLOCKS_PER_KEY, --每个KEY的平均叶块个数
+    AVG_DATA_BLOCKS_PER_KEY, --每个KEY的平均数据块个数
+    CLUSTERING_FACTOR --群集因子
+FROM USER_INDEXES
+ 
+3.3    列的统计信息 
+            包含 唯一的值个数，列最大小值，密度（选择率），数据分布（直方图信息），NUll值个数
+ 
+SELECT NUM_DISTINCT, --唯一值的个数
+    LOW_VALUE, --列上的最小值
+    HIGH_VALUE, --列上的最大值
+    DENSITY, --选择率因子（密度）
+    NUM_NULLS, --空值的个数
+    NUM_BUCKETS, --直方图的BUCKET个数
+    HISTOGRAM --直方图的类型
+FROM USER_TAB_COLUMNS
