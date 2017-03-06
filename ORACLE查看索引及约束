@@ -1,0 +1,10 @@
+有无主键
+select * from SYS.ALL_CONSTRAINTS t where table_name ='T_CONFIG' AND constraint_type = 'P'
+
+
+查看索引字段
+select * from all_ind_columns x 
+
+
+查看表字段
+SELECT * FROM    all_tab_columns 
