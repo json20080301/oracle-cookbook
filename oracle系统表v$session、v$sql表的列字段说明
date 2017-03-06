@@ -1,0 +1,19 @@
+http://lizhiyu.iteye.com/blog/966626
+
+1.查看消耗资源最多的 SQL：
+SELECT hash_value, executions, buffer_gets, disk_reads, parse_calls
+FROM V$SQLAREA
+WHERE buffer_gets > 10000000 OR disk_reads > 1000000
+ORDER BY buffer_gets + 100 * disk_reads DESC ;
+
+2. 查看某条 SQL 语句的资源消耗：
+SELECT hash_value, buffer_gets, disk_reads, executions, parse_calls
+FROM V$SQLAREA
+WHERE hash_Value = 228801498 AND address = hextoraw( 'CBD8E4B0' );
+
+3.查找前10条性能差的sql语句 
+Sql代码
+  
+SELECT * FROM (select PARSING_USER_ID,EXECUTIONS,SORTS,COMMAND_TYPE,DISK_READS,sql_text FROM v$sqlarea order BY disk_reads DESC )
+where ROWNUM<10 ;说明: 
+EXECUTIONS表示同一条SQL语句一共执行了多少次，SORTS表示排序的次数，DISK_READS表示物理读的数量。
