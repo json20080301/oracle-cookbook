@@ -1,5 +1,7 @@
 http://lizhiyu.iteye.com/blog/966626
 
+http://www.cnblogs.com/sopost/archive/2012/06/01/2530770.html
+
 1.查看消耗资源最多的 SQL：
 SELECT hash_value, executions, buffer_gets, disk_reads, parse_calls
 FROM V$SQLAREA
