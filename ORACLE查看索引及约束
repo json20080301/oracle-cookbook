@@ -10,6 +10,5 @@ select * from all_ind_columns x
 SELECT * FROM    all_tab_columns 
 
 
-select *
-          from all_indexes x
-         where  x.index_type = 'BITMAP'
+查看位图索引
+select *    from all_indexes x  where  x.index_type = 'BITMAP'
