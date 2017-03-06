@@ -8,3 +8,8 @@ select * from all_ind_columns x
 
 查看表字段
 SELECT * FROM    all_tab_columns 
+
+
+select *
+          from all_indexes x
+         where  x.index_type = 'BITMAP'
